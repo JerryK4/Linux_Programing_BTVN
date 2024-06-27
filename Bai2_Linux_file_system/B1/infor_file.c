@@ -51,5 +51,5 @@ int main(int argc,char *argv[])
     printf("Last file modification:   %s", ctime(&sb.st_mtime));
 
     exit(EXIT_SUCCESS);
-
+//Có thể lấy file hello.txt của bài 2 để làm cùng bài 1.Khi chạy file cần chạy file bài 2 trước sau đó quay lại bài 1:./infor hello.txt
 }
