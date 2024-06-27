@@ -1,43 +1,55 @@
-#include <stdio.h>
-#include <fcntl.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <stdarg.h>
-#include <unistd.h>
-#include <time.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/sysmacros.h>
-int main()
+#include<stdio.h>
+#include<string.h>
+#include<stdlib.h>
+#include<sys/stat.h>
+#include<time.h>
+#include<stdint.h>
+#include<fcntl.h>
+#include<sys/sysmacros.h>
+int main(int argc,char *argv[])
 {
-    //Khai bao bien stat
-    struct stat fileInfo;
+    struct stat sb;
 
-    //Lay thong tin file test.txt
-    int status=stat("test.txt",&fileInfo);
-
-    //Kiem tra loi
-    if(status!=0)
-    {
-        perror("Lỗi file");
-        return 1;
+    if(argc!=2){
+        fprintf(stderr,"Usage:%s hello.txt\n",argv[0]);
+        exit(EXIT_FAILURE);
     }
 
-    //In ra thong tin file
-    printf("File Type: ");
-    switch(fileInfo.st_mode & S_IFMT){
-        case S_IFREG:printf("Regular file\n");break;
-        case S_IFDIR:printf("Directory\n"); break;
-        case S_IFLNK:printf("Symlink\n"); break;
-        case S_IFSOCK:printf("Socket\n"); break;
-        case S_IFIFO:printf("FIFO/pipr\n");break;
-        case S_IFBLK:printf("Block Device\n");break;
-        case S_IFCHR:printf("Character device\n");break;
-        default: printf("Unknown\n"); break;
+    if(lstat(argv[1],&sb)==-1){
+        perror("lstat");
+        exit(EXIT_FAILURE);
     }
-    printf("File name: test.txt\n");
-    printf("Last file modification: %s", ctime(&fileInfo.st_mtime));
-    printf("File size: %ld bytes\n", (intmax_t)fileInfo.st_size);
-  
-    return 0;
+
+    printf("ID of containing device: [%x,%x]\n",major(sb.st_dev),minor(sb.st_dev));
+
+    printf("File type:                ");
+
+    switch (sb.st_mode & S_IFMT) {
+        case S_IFBLK:  printf("block device\n");            break;
+        case S_IFCHR:  printf("character device\n");        break;
+        case S_IFDIR:  printf("directory\n");               break;
+        case S_IFIFO:  printf("FIFO/pipe\n");               break;
+        case S_IFLNK:  printf("symlink\n");                 break;
+        case S_IFREG:  printf("regular file\n");            break;
+        case S_IFSOCK: printf("socket\n");                  break;
+        default:       printf("unknown?\n");                break;
+    }
+
+    printf("I-node number:            %ju\n", (uintmax_t) sb.st_ino);
+
+    printf("Mode:                     %jo (octal)\n",(uintmax_t) sb.st_mode);
+
+    printf("Link count:               %ju\n", (uintmax_t) sb.st_nlink);
+    printf("Ownership:                UID=%ju   GID=%ju\n",(uintmax_t) sb.st_uid, (uintmax_t) sb.st_gid);
+
+    printf("Preferred I/O block size: %jd bytes\n",(intmax_t) sb.st_blksize);
+    printf("File size:                %jd bytes\n",(intmax_t) sb.st_size);
+    printf("Blocks allocated:         %jd\n",(intmax_t) sb.st_blocks);
+
+    printf("Last status change:       %s", ctime(&sb.st_ctime));
+    printf("Last file access:         %s", ctime(&sb.st_atime));
+    printf("Last file modification:   %s", ctime(&sb.st_mtime));
+
+    exit(EXIT_SUCCESS);
+
 }
